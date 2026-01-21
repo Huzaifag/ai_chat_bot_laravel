@@ -85,4 +85,13 @@ class AdminController extends Controller
         }, 'chats.document'])->findOrFail($sessionId);
         return view('admin.chatlog-detail', compact('session'));
     }
+
+        // AJAX endpoint for latest chat sessions (for notification dropdown)
+    public function latestChatSessions()
+    {
+        $sessions = \App\Models\ChatSession::orderBy('created_at', 'desc')
+            ->take(5)
+            ->get(['id', 'session_id', 'created_at']);
+        return response()->json($sessions);
+    }
 }

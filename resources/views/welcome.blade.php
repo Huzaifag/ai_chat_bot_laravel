@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium Chatbot UI</title>
+
+       <!-- Favicon -->
+    @if(system_setting('app_favicon'))
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . system_setting('app_favicon')) }}">
+    @endif
     
     <!-- Fonts: Inter (Premium Standard) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -90,14 +95,17 @@
         <div class="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between sticky top-0 z-10">
             <div class="flex items-center space-x-4">
                 <div class="relative">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center text-white shadow-md ring-2 ring-white dark:ring-gray-800">
-                        <i data-lucide="bot" class="w-6 h-6"></i>
-                    </div>
-                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></span>
+                    @if(system_setting('app_favicon'))
+                        <img src="{{ asset('storage/' . system_setting('app_favicon')) }}" alt="{{ system_setting('app_name', 'Logo') }}" class="w-10 h-10 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-gray-800">
+                    @else
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center text-white shadow-md ring-2 ring-white dark:ring-gray-800">
+                            <i data-lucide="bot" class="w-6 h-6"></i>
+                        </div>
+                    @endif
                 </div>
                 <div>
-                    <h3 class="font-bold text-base text-gray-900 dark:text-white">Enterprise Assistant</h3>
-                    <p class="text-xs text-brand-600 dark:text-brand-400 font-medium">Online & Ready</p>
+                    <span class="text-lg font-bold tracking-tight text-gray-900 dark:text-white">{{ system_setting('app_name', 'Premium Chatbot') }}</span>
+                    <span class="block text-xs text-gray-500 dark:text-gray-400">{{ system_setting('app_tagline', 'Your AI Assistant') }}</span>
                 </div>
             </div>
             
@@ -149,9 +157,11 @@
                     </div>
                 </div>
                 
-                <a href="{{ route('admin.login') }}" class="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors" title="Admin Panel">
-                    <i data-lucide="shield" class="w-5 h-5"></i>
-                </a>
+                @auth('admin')
+                    <a href="{{ route('admin.login') }}" class="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors" title="Admin Panel">
+                        <i data-lucide="shield" class="w-5 h-5"></i>
+                    </a>
+                @endauth
             </div>
         </div>
 
@@ -268,8 +278,10 @@
                             <i data-lucide="bot" class="w-4 h-4"></i>
                         </div>
                         <div class="space-y-1 flex-1">
-                            <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm w-fit max-w-[90%] sm:max-w-[80%]">
-                                <p class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">${text}</p>
+                            <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm w-fit max-w-[90%] sm:max-w-[80%] prose dark:prose-invert max-w-none">
+                                <span class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                                    ${window.renderMarkdown ? window.renderMarkdown(text) : text}
+                                </span>
                             </div>
                             <span class="text-[10px] text-gray-400 ml-1">${formatTime()}</span>
                         </div>
@@ -279,6 +291,21 @@
                 lucide.createIcons(); // Re-init icons for new message
                 scrollToBottom();
             }
+
+            // Markdown rendering helper using Laravel's Str::markdown via AJAX
+            window.renderMarkdown = function(text) {
+                let html = text;
+                $.ajax({
+                    url: '/api/markdown',
+                    method: 'POST',
+                    data: { text: text, _token: '{{ csrf_token() }}' },
+                    async: false,
+                    success: function(response) {
+                        html = response.html;
+                    }
+                });
+                return html;
+            };
 
 
             // --- Logic & Data Flow ---

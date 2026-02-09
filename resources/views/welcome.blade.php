@@ -95,6 +95,7 @@
             <button class="mode-btn w-full px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition" data-mode="research">Research Mode</button>
         </div>
     </div>
+
         // Mode selection logic
         let chatMode = localStorage.getItem('chatMode') || null;
         function setMode(mode) {
@@ -102,7 +103,8 @@
             localStorage.setItem('chatMode', mode);
             $('#mode-selector').hide();
         }
-        $(document).ready(function() {
+
+            // Mode selector logic
             if (!chatMode) {
                 $('#mode-selector').show();
             } else {
@@ -111,7 +113,6 @@
             $('.mode-btn').on('click', function() {
                 setMode($(this).data('mode'));
             });
-        });
 
     <!-- Main App Window -->
     <!-- On mobile: w-full h-full (full screen) -->

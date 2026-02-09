@@ -81,12 +81,14 @@ class ChatController extends Controller
         $request->validate([
             'session_id' => 'required|string',
             'message' => 'required|string|max:1000',
-            'interest' => 'nullable|string'
+            'interest' => 'nullable|string',
+            'mode' => 'nullable|in:default,research'
         ]);
 
         $sessionId = $request->session_id;
         $userMessage = trim($request->message);
         $interest = $request->interest;
+        $mode = $request->mode ?? 'default';
 
         // Ensure session exists
         $session = ChatSession::firstOrCreate(
@@ -118,8 +120,12 @@ class ChatController extends Controller
             $document = $documents->first();
             $context = $this->documentRetrievalService->getContext($document->id, $userMessage);
 
-            // Generate AI prompt
-            $prompt = $this->promptService->documentChatPrompt($context, $conversationHistory, $userMessage);
+            // Generate AI prompt based on mode
+            if ($mode === 'research') {
+                $prompt = $this->promptService->researchChatPrompt($context, $conversationHistory, $userMessage);
+            } else {
+                $prompt = $this->promptService->documentChatPrompt($context, $conversationHistory, $userMessage);
+            }
 
             // Get AI response with metrics
             $startTime = microtime(true);

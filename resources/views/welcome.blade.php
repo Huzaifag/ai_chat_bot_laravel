@@ -328,7 +328,7 @@
                 setTimeout(function() {
                     $('#welcome-loader').remove();
                 }, 600); // Match fade-out animation duration
-            }, 3000); // Show welcome screen for 3 seconds
+            }, 5000); // Show welcome screen for 5 seconds
 
             // State
             let isThinking = false;
@@ -596,12 +596,15 @@
             $('#mode-selector').hide();
         }
 
-            // Mode selector logic
-            if (!chatMode) {
-                $('#mode-selector').show();
-            } else {
-                $('#mode-selector').hide();
-            }
+            // Mode selector logic - show after welcome screen
+            setTimeout(function() {
+                if (!chatMode) {
+                    $('#mode-selector').show();
+                } else {
+                    $('#mode-selector').hide();
+                }
+            }, 5600); // Show mode selector after welcome screen fades (5000ms + 600ms fade)
+            
             $('.mode-btn').on('click', function() {
                 setMode($(this).data('mode'));
             });

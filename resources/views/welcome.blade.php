@@ -96,23 +96,7 @@
         </div>
     </div>
 
-        // Mode selection logic
-        let chatMode = localStorage.getItem('chatMode') || null;
-        function setMode(mode) {
-            chatMode = mode;
-            localStorage.setItem('chatMode', mode);
-            $('#mode-selector').hide();
-        }
-
-            // Mode selector logic
-            if (!chatMode) {
-                $('#mode-selector').show();
-            } else {
-                $('#mode-selector').hide();
-            }
-            $('.mode-btn').on('click', function() {
-                setMode($(this).data('mode'));
-            });
+       
 
     <!-- Main App Window -->
     <!-- On mobile: w-full h-full (full screen) -->

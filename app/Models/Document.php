@@ -18,6 +18,7 @@ class Document extends Model
         'status',
         'uploaded_by',
         'slug',
+        'mode',
     ];
 
     protected $casts = [
@@ -37,6 +38,10 @@ class Document extends Model
                     $slug .= '-' . ($count + 1);
                 }
                 $document->slug = $slug;
+            }
+            // Set mode to 'default' if not provided
+            if (empty($document->mode)) {
+                $document->mode = 'default';
             }
         });
     }

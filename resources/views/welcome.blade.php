@@ -179,7 +179,7 @@
     <div id="chat-window" class="w-full h-full sm:max-w-[480px] md:max-w-[700px] lg:max-w-[900px] sm:h-[85vh] bg-white dark:bg-gray-800 sm:rounded-2xl sm:shadow-2xl border-0 sm:border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative">
         
         <!-- Header -->
-        <div class="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between sticky top-0 z-10">
+        <div class="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between fixed sm:sticky top-0 left-0 right-0 sm:left-auto sm:right-auto w-full z-20">
             <div class="flex items-center space-x-4">
                 <div class="relative">
                     @if(system_setting('app_favicon'))
@@ -253,7 +253,7 @@
         </div>
 
         <!-- Messages Area -->
-        <div id="messages-container" class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-6 bg-gray-50/50 dark:bg-gray-900/50">
+        <div id="messages-container" class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-6 bg-gray-50/50 dark:bg-gray-900/50 pt-[88px] sm:pt-6 pb-[120px] sm:pb-6">
             
             <!-- Date Separator -->
             <div class="flex justify-center my-4">
@@ -290,7 +290,7 @@
         </div>
 
         <!-- Input Area -->
-        <div class="p-4 sm:p-6 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+        <div class="p-4 sm:p-6 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 fixed sm:relative bottom-0 left-0 right-0 sm:left-auto sm:right-auto w-full z-20">
             <div class="max-w-3xl mx-auto w-full">
                 <form id="chat-form" class="relative flex items-end shadow-sm rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500 transition-all">
                     <input 

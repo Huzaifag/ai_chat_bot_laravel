@@ -340,6 +340,35 @@
             const $form = $('#chat-form');
             const $typingIndicator = $('#typing-indicator');
 
+            // Mobile Keyboard Handler
+            if (window.visualViewport) {
+                const viewport = window.visualViewport;
+                const handleViewportChange = () => {
+                    const viewportHeight = viewport.height;
+                    const windowHeight = window.innerHeight;
+                    
+                    // If viewport is smaller than window (keyboard is open)
+                    if (viewportHeight < windowHeight) {
+                        // Scroll to input when keyboard opens
+                        setTimeout(() => {
+                            $input[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                    }
+                };
+                
+                viewport.addEventListener('resize', handleViewportChange);
+            }
+
+            // Focus handler for input - scroll when focused on mobile
+            $input.on('focus', function() {
+                if (window.innerWidth < 640) { // Mobile only
+                    setTimeout(() => {
+                        scrollToBottom();
+                        this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300); // Delay to allow keyboard to open
+                }
+            });
+
             // --- UI Helper Functions ---
 
             function scrollToBottom() {

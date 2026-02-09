@@ -290,6 +290,7 @@
     @stack('scripts')
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="{{ asset('js/admin.js') }}"></script>
     <script>
         // Navbar cache clear button logic (safe for all pages)
@@ -309,7 +310,13 @@
                     try {
                         const res = await fetch('/optimize');
                         const msg = await res.text();
-                        if (toastMsg) toastMsg.textContent = msg;
+                        if (toastMsg){
+                            toastMsg.textContent = msg;
+                            // Hard refresh the page to clear any cached data
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        } 
                     } catch (e) {
                         if (toastMsg) toastMsg.textContent = 'Failed to clear cache.';
                     }

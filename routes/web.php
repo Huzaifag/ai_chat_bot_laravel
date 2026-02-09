@@ -45,7 +45,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings', [SystemSettingController::class, 'update'])->name('settings.update');
     });
 
-
+    // Document Custom Routes (must be before resource routes)
+    Route::middleware('admin.auth')->group(function () {
+        Route::get('documents/{id}/read', [DocumentController::class, 'read'])->name('documents.read');
+        Route::get('documents/{id}/download', [DocumentController::class, 'download'])->name('documents.download');
+    });
+    
     // Document Resource Routes
     Route::resource('documents', DocumentController::class)->middleware('admin.auth');
     Route::resource('ai-api-configs', AiApiConfigController::class)->middleware('admin.auth');

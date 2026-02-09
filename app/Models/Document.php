@@ -57,6 +57,12 @@ class Document extends Model
         return $this->hasManyThrough(Embedding::class, DocumentChunk::class, 'document_id', 'chunk_id', 'id', 'id');
     }
 
+    // Relationship with Chats
+    public function chats(): HasMany
+    {
+        return $this->hasMany(Chat::class);
+    }
+
     // Scope for filtering by status
     public function scopeStatus($query, $status)
     {

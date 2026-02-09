@@ -33,6 +33,9 @@
                 </div>
             </div>
 
+            <!-- File List -->
+            <div id="file-list" class="mt-4 space-y-2"></div>
+
             <!-- Interest/Slug Selection -->
             <div class="mt-6">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Interest Category</label>
@@ -130,10 +133,16 @@
                     console.log('Starting upload of files:', uploadSelectedFiles);
                     if (uploadSelectedFiles.length === 0) return;
 
+                    const slug = document.getElementById('document-slug').value;
                     const formData = new FormData();
+                    
                     uploadSelectedFiles.forEach(file => {
                         formData.append('document[]', file);
                     });
+                    
+                    if (slug) {
+                        formData.append('slug', slug);
+                    }
 
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', '/admin/documents');
@@ -192,11 +201,6 @@
                         return;
                     }
 
-                    // Click to open file dialog
-                    dropZone.addEventListener('click', () => {
-                        fileInput.click();
-                    });
-
                     // Bind upload button event
                     btnStartUpload.addEventListener('click', (e) => {
                         console.log('Upload button clicked');
@@ -216,17 +220,20 @@
 
                     dropZone.addEventListener('drop', (e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         dropZone.classList.remove('border-primary-500');
                         const files = Array.from(e.dataTransfer.files);
                         console.log('Files dropped', files);
                         addFiles(files);
                     });
 
-                    // File input
+                    // File input change event
                     fileInput.addEventListener('change', (e) => {
                         console.log('File input changed', e.target.files);
                         const files = Array.from(e.target.files);
                         addFiles(files);
+                        // Clear input so same file can be selected again
+                        e.target.value = '';
                     });
                 });
             })();

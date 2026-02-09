@@ -49,8 +49,14 @@ class ProcessDocumentJob implements ShouldQueue
                 return;
             }
 
-            // Create chunks
-            $chunks = $textChunker->chunk($text, 500, 50); // 500 words per chunk, 50 word overlap
+            // Create chunks using system settings
+            $chunks = $textChunker->chunk($text); // Uses default_chunk_size and chunk_overlap from settings
+
+            if (empty($chunks)) {
+                $document->update(['status' => 'failed']);
+                Log::error('No valid chunks created for document ' . $document->id);
+                return;
+            }
 
             // Save chunks
             foreach ($chunks as $index => $chunkContent) {
@@ -67,3 +73,8 @@ class ProcessDocumentJob implements ShouldQueue
         }
     }
 }
+
+
+// command to run the worker:
+
+// -> php artisan queue:work

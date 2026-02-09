@@ -5,21 +5,36 @@ namespace App\Services;
 class TextChunker
 {
     /**
-     * Split text into chunks.
+     * Split text into chunks based on system settings.
      *
      * @param string $text
-     * @param int $chunkSize Number of words per chunk
-     * @param int $overlap Number of words to overlap between chunks
+     * @param int|null $chunkSize Number of characters per chunk (null = use settings)
+     * @param int|null $overlap Number of characters to overlap (null = use settings)
      */
-    public function chunk(string $text, int $chunkSize = 500, int $overlap = 50): array
+    public function chunk(string $text, ?int $chunkSize = null, ?int $overlap = null): array
     {
-        $words = preg_split('/\s+/', trim($text));
-        $chunks = [];
+        // Get settings if not provided
+        $chunkSize = $chunkSize ?? (int) system_setting('default_chunk_size', '1000');
+        $overlap = $overlap ?? (int) system_setting('chunk_overlap', '200');
 
-        for ($i = 0; $i < count($words); $i += ($chunkSize - $overlap)) {
-            $chunks[] = implode(' ', array_slice($words, $i, $chunkSize));
+        $chunks = [];
+        $text = trim($text);
+        
+        if (empty($text)) {
+            return [];
         }
 
-        return $chunks;
+        // Character-based chunking with overlap
+        $length = strlen($text);
+        
+        for ($i = 0; $i < $length; $i += ($chunkSize - $overlap)) {
+            $chunk = substr($text, $i, $chunkSize);
+            
+            if (strlen(trim($chunk)) > 0) {
+                $chunks[] = $chunk;
+            }
+        }
+
+        return array_filter($chunks);
     }
 }

@@ -158,7 +158,7 @@
                 </div>
                 
                 @auth('admin')
-                    <a href="{{ route('admin.login') }}" class="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors" title="Admin Panel">
+                    <a href="{{ route('admin.dashboard') }}" class="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors" title="Admin Panel" target="_blank">
                         <i data-lucide="shield" class="w-5 h-5"></i>
                     </a>
                 @endauth
@@ -430,7 +430,12 @@
             });
 
         // Interest selector functionality
-        let selectedInterest = localStorage.getItem('chatbot-interest') || '';
+        let selectedInterest = localStorage.getItem('chatbot-interest') || 'general';
+        
+        // Set default interest if not already set
+        if (!localStorage.getItem('chatbot-interest')) {
+            localStorage.setItem('chatbot-interest', 'general');
+        }
         
         window.selectInterest = function(interest) {
             selectedInterest = interest;
@@ -463,11 +468,14 @@
         
         // Initialize selected interest on load
         document.addEventListener('DOMContentLoaded', function() {
-            if (selectedInterest) {
+            if (selectedInterest && selectedInterest !== '') {
                 const checkEl = document.getElementById('check-' + selectedInterest);
                 if (checkEl) checkEl.style.display = 'block';
             } else {
-                document.getElementById('check-all').style.display = 'block';
+                // Default to general if nothing set
+                selectedInterest = 'general';
+                localStorage.setItem('chatbot-interest', 'general');
+                document.getElementById('check-general').style.display = 'block';
             }
         });
             

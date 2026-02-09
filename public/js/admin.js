@@ -143,9 +143,15 @@ async function renderDocumentsTable(filterText = '') {
             <td class="px-6 py-4 text-gray-500">${doc.embeddings_count || 0}</td>
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onclick="viewDocument(${doc.id})" class="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded dark:hover:bg-gray-700 dark:hover:text-primary-400" title="View">
+                    <a href="/admin/documents/${doc.id}" class="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded dark:hover:bg-gray-700 dark:hover:text-primary-400" title="View Details">
                         <i data-lucide="eye" class="w-4 h-4"></i>
-                    </button>
+                    </a>
+                    <a href="/admin/documents/${doc.id}/read" class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded dark:hover:bg-gray-700 dark:hover:text-blue-400" title="Read Content">
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                    </a>
+                    <a href="/admin/documents/${doc.id}/download" class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded dark:hover:bg-gray-700 dark:hover:text-green-400" title="Download">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                    </a>
                     <button onclick="deleteDocument(${doc.id})" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded dark:hover:bg-gray-700 dark:hover:text-red-400" title="Delete">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>

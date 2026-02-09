@@ -11,6 +11,7 @@ use App\Services\ChatHistoryService;
 use App\Services\DocumentRetrievalService;
 use App\Services\GeminiApiService;
 use App\Services\OpenAiApiService;
+use App\Services\GroqApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -23,19 +24,22 @@ class ChatController extends Controller
 
     protected GeminiApiService $geminiApiService;
     protected OpenAiApiService $openAiApiService;
+    protected GroqApiService $groqApiService;
 
     public function __construct(
         AIPromptService $promptService,
         ChatHistoryService $chatHistoryService,
         DocumentRetrievalService $documentRetrievalService,
         GeminiApiService $geminiApiService,
-        OpenAiApiService $openAiApiService
+        OpenAiApiService $openAiApiService,
+        GroqApiService $groqApiService
     ) {
         $this->promptService = $promptService;
         $this->chatHistoryService = $chatHistoryService;
         $this->documentRetrievalService = $documentRetrievalService;
         $this->geminiApiService = $geminiApiService;
         $this->openAiApiService = $openAiApiService;
+        $this->groqApiService = $groqApiService;
     }
 
     /**
@@ -103,6 +107,10 @@ class ChatController extends Controller
         $documents = $this->findRelevantDocuments($interest, $userMessage);
 
         $botResponse = "I understand you're asking about: " . $userMessage;
+        $apiProvider = null;
+        $apiTokens = 0;
+        $apiCost = 0;
+        $responseTimeMs = 0;
 
         if ($documents->isNotEmpty()) {
             // Use the first relevant document for context
@@ -112,19 +120,30 @@ class ChatController extends Controller
             // Generate AI prompt
             $prompt = $this->promptService->documentChatPrompt($context, $conversationHistory, $userMessage);
 
-            // Get AI response
-            $botResponse = $this->generateAIResponse($prompt);
+            // Get AI response with metrics
+            $startTime = microtime(true);
+            $aiResult = $this->generateAIResponse($prompt);
+            $responseTimeMs = (int)((microtime(true) - $startTime) * 1000);
+            
+            $botResponse = $aiResult['response'];
+            $apiProvider = $aiResult['provider'];
+            $apiTokens = $aiResult['tokens'];
+            $apiCost = $aiResult['cost'];
 
             // Associate response with document
             $userChat->update(['document_id' => $document->id]);
         }
 
-        // Save bot response
+        // Save bot response with API metrics
         Chat::create([
             'session_id' => $sessionId,
             'role' => 'bot',
             'message' => $botResponse,
             'document_id' => $documents->isNotEmpty() ? $documents->first()->id : null,
+            'api_provider' => $apiProvider,
+            'api_tokens_used' => $apiTokens,
+            'api_cost' => $apiCost,
+            'response_time_ms' => $responseTimeMs,
         ]);
 
         return response()->json([
@@ -164,23 +183,39 @@ class ChatController extends Controller
             $documents = $this->findRelevantDocuments($interest, $userMessage->message);
 
             $botResponse = "I received your message: " . $userMessage->message;
+            $apiProvider = null;
+            $apiTokens = 0;
+            $apiCost = 0;
+            $responseTimeMs = 0;
 
             if ($documents->isNotEmpty()) {
                 $document = $documents->first();
                 $context = $this->documentRetrievalService->getContext($document->id, $userMessage->message);
 
                 $prompt = $this->promptService->documentChatPrompt($context, $conversationHistory, $userMessage->message);
-                $botResponse = $this->generateAIResponse($prompt);
+                
+                $startTime = microtime(true);
+                $aiResult = $this->generateAIResponse($prompt);
+                $responseTimeMs = (int)((microtime(true) - $startTime) * 1000);
+                
+                $botResponse = $aiResult['response'];
+                $apiProvider = $aiResult['provider'];
+                $apiTokens = $aiResult['tokens'];
+                $apiCost = $aiResult['cost'];
 
                 $userMessage->update(['document_id' => $document->id]);
             }
 
-            // Save bot response
+            // Save bot response with metrics
             $botChat = Chat::create([
                 'session_id' => $sessionId,
                 'role' => 'bot',
                 'message' => $botResponse,
                 'document_id' => $documents->isNotEmpty() ? $documents->first()->id : null,
+                'api_provider' => $apiProvider,
+                'api_tokens_used' => $apiTokens,
+                'api_cost' => $apiCost,
+                'response_time_ms' => $responseTimeMs,
             ]);
 
             $responses[] = [
@@ -233,31 +268,99 @@ class ChatController extends Controller
 
     /**
      * Generate AI response using configured API
+     * Returns array with response, provider, tokens, and cost
      */
-    private function generateAIResponse(string $prompt): string
+    private function generateAIResponse(string $prompt): array
     {
         try {
             // Get active AI config
-            $aiConfig = \App\Models\AiApiConfig::where('is_active', true)->first();
+            $aiConfig = AiApiConfig::where('is_active', true)->first();
             if (!$aiConfig) {
-                return "I'm sorry, but no AI service is currently configured. Please contact the administrator.";
+                return [
+                    'response' => "I'm sorry, but no AI service is currently configured. Please contact the administrator.",
+                    'provider' => null,
+                    'tokens' => 0,
+                    'cost' => 0
+                ];
             }
 
             if ($aiConfig->provider === 'gemini') {
                 if (!$this->geminiApiService->isConfigured()) {
-                    return "I'm sorry, but Gemini AI service is not configured. Please contact the administrator.";
+                    return [
+                        'response' => "I'm sorry, but Gemini AI service is not configured. Please contact the administrator.",
+                        'provider' => 'gemini',
+                        'tokens' => 0,
+                        'cost' => 0
+                    ];
                 }
-                return $this->geminiApiService->generateResponse($prompt);
+                $response = $this->geminiApiService->generateResponse($prompt);
+                // Estimate tokens (rough estimate: 1 token ≈ 4 characters)
+                $tokens = (int)(strlen($prompt . $response) / 4);
+                // Gemini pricing (example: $0.00025 per 1K tokens)
+                $cost = ($tokens / 1000) * 0.00025;
+                
+                return [
+                    'response' => $response,
+                    'provider' => 'gemini',
+                    'tokens' => $tokens,
+                    'cost' => $cost
+                ];
             } elseif ($aiConfig->provider === 'openai') {
                 if (!$this->openAiApiService->isConfigured()) {
-                    return "I'm sorry, but OpenAI service is not configured. Please contact the administrator.";
+                    return [
+                        'response' => "I'm sorry, but OpenAI service is not configured. Please contact the administrator.",
+                        'provider' => 'openai',
+                        'tokens' => 0,
+                        'cost' => 0
+                    ];
                 }
-                return $this->openAiApiService->generateResponse($prompt);
+                $response = $this->openAiApiService->generateResponse($prompt);
+                // Estimate tokens
+                $tokens = (int)(strlen($prompt . $response) / 4);
+                // OpenAI pricing (example: $0.002 per 1K tokens for GPT-3.5)
+                $cost = ($tokens / 1000) * 0.002;
+                return [
+                    'response' => $response,
+                    'provider' => 'openai',
+                    'tokens' => $tokens,
+                    'cost' => $cost
+                ];
+            } elseif ($aiConfig->provider === 'groq') {
+                if (!$this->groqApiService->isConfigured()) {
+                    return [
+                        'response' => "I'm sorry, but Groq AI service is not configured. Please contact the administrator.",
+                        'provider' => 'groq',
+                        'tokens' => 0,
+                        'cost' => 0
+                    ];
+                }
+                $response = $this->groqApiService->generateResponse($prompt);
+                // Estimate tokens
+                $tokens = (int)(strlen($prompt . $response) / 4);
+                // Groq pricing (example: $0.0015 per 1K tokens for GPT-3.5)
+                $cost = ($tokens / 1000) * 0.0015;
+                
+                return [
+                    'response' => $response,
+                    'provider' => 'groq',
+                    'tokens' => $tokens,
+                    'cost' => $cost
+                ];
             } else {
-                return "I'm sorry, but the selected AI provider is not supported.";
+                return [
+                    'response' => "I'm sorry, but the selected AI provider is not supported.",
+                    'provider' => null,
+                    'tokens' => 0,
+                    'cost' => 0
+                ];
             }
         } catch (\Exception $e) {
-            return "I apologize, but I'm having trouble generating a response right now. Please try again later.";
+            return [
+                'response' => "I apologize, but I'm having trouble generating a response right now. Please try again later.",
+                'provider' => null,
+                'tokens' => 0,
+                'cost' => 0
+            ];
         }
     }
 

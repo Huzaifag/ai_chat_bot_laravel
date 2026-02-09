@@ -62,9 +62,17 @@ class DocumentController extends Controller
      */
     public function store(Request $request)
     {
+        // Get settings
+        $maxSizeMB = (int) system_setting('max_document_size_mb', '10');
+        $allowedTypes = system_setting('allowed_document_types', 'pdf,docx,txt,csv');
+
+        // Prepare validation rules
+        $allowedMimes = str_replace(',', ',', $allowedTypes);
+        $maxSizeKB = $maxSizeMB * 1024;
+
         $request->validate([
             'document' => 'required|array',
-            'document.*' => 'file|mimes:pdf,docx,txt,csv|max:20480',
+            'document.*' => 'file|mimes:' . $allowedMimes . '|max:' . $maxSizeKB,
             'slug' => 'nullable|string|max:255',
         ]);
 
@@ -88,8 +96,11 @@ class DocumentController extends Controller
             }
         });
 
-        // Dispatch processing jobs
+        // Dispatch processing jobs based on mode
+        $processingMode = system_setting('document_processing_mode', 'full');
+        
         foreach ($uploadedDocuments as $document) {
+            // Always queue for background processing
             ProcessDocumentJob::dispatch($document->id);
         }
 
@@ -123,6 +134,36 @@ class DocumentController extends Controller
     public function update(Request $request, string $id)
     {
         //
+    }
+
+    /**
+     * Download the document file.
+     */
+    public function download(string $id)
+    {
+        $document = Document::where('id', $id)->where('uploaded_by', auth('admin')->id())->firstOrFail();
+
+        if (!Storage::disk('private')->exists($document->stored_path)) {
+            abort(404, 'File not found');
+        }
+
+        return Storage::disk('private')->download($document->stored_path, $document->original_name);
+    }
+
+    /**
+     * Read/view the document content.
+     */
+    public function read(string $id)
+    {
+        $document = Document::where('id', $id)
+            ->where('uploaded_by', auth('admin')->id())
+            ->with('chunks')
+            ->firstOrFail();
+
+        // Get extracted text content
+        $content = $document->chunks->sortBy('chunk_index')->pluck('chunk_text')->implode("\n\n");
+
+        return view('admin.document-read', compact('document', 'content'));
     }
 
     /**

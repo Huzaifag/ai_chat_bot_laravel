@@ -14,6 +14,10 @@ class Chat extends Model
         'document_id',
         'role',
         'message',
+        'api_provider',
+        'api_tokens_used',
+        'api_cost',
+        'response_time_ms',
     ];
 
     /**

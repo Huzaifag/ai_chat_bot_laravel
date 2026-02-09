@@ -116,6 +116,7 @@
                                     <option value="gemini">Gemini</option>
                                     <option value="openai">OpenAI</option>
                                     <option value="anthropic">Anthropic</option>
+                                    <option value="groq">Groq</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>

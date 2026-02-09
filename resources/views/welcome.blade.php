@@ -86,6 +86,33 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-screen w-full flex items-center justify-center sm:p-6 transition-colors duration-300">
 
+    <!-- Mode Selector Modal -->
+    <div id="mode-selector" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" style="display:none;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-xs w-full text-center">
+            <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Choose Assistant Mode</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-300 mb-6">Select how you want the assistant to respond:</p>
+            <button class="mode-btn w-full mb-3 px-4 py-2 rounded-lg bg-brand-600 text-white font-semibold hover:bg-brand-700 transition" data-mode="default">Standard Mode</button>
+            <button class="mode-btn w-full px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition" data-mode="research">Research Mode</button>
+        </div>
+    </div>
+        // Mode selection logic
+        let chatMode = localStorage.getItem('chatMode') || null;
+        function setMode(mode) {
+            chatMode = mode;
+            localStorage.setItem('chatMode', mode);
+            $('#mode-selector').hide();
+        }
+        $(document).ready(function() {
+            if (!chatMode) {
+                $('#mode-selector').show();
+            } else {
+                $('#mode-selector').hide();
+            }
+            $('.mode-btn').on('click', function() {
+                setMode($(this).data('mode'));
+            });
+        });
+
     <!-- Main App Window -->
     <!-- On mobile: w-full h-full (full screen) -->
     <!-- On desktop: max-width container with rounded corners and shadow (app-like feel) -->
@@ -353,6 +380,7 @@
 
                 const sessionId = getSessionId();
                 const interest = localStorage.getItem('chatbot-interest') || '';
+                const mode = chatMode || 'default';
 
                 $.ajax({
                     url: '/api/chat/send',
@@ -361,6 +389,7 @@
                         session_id: sessionId,
                         message: text,
                         interest: interest,
+                        mode: mode,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {

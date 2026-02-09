@@ -505,7 +505,23 @@
                     $('#interest-dropdown').addClass('hidden');
                 }
             });
+             // Mode selection logic
+        let chatMode = localStorage.getItem('chatMode') || null;
+        function setMode(mode) {
+            chatMode = mode;
+            localStorage.setItem('chatMode', mode);
+            $('#mode-selector').hide();
+        }
 
+            // Mode selector logic
+            if (!chatMode) {
+                $('#mode-selector').show();
+            } else {
+                $('#mode-selector').hide();
+            }
+            $('.mode-btn').on('click', function() {
+                setMode($(this).data('mode'));
+            });
             // Initial load
             setTimeout(() => {
                 loadPreviousMessages();

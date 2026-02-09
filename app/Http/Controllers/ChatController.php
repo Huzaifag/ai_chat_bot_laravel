@@ -248,7 +248,7 @@ class ChatController extends Controller
             $keywords = explode(' ', strtolower($message));
             $interestKeywords = [
                 'medical' => ['medical', 'health', 'doctor', 'patient', 'treatment'],
-                'technical' => ['technical', 'code', 'programming', 'software', 'api'],
+                'technical' => ['technical', 'code', 'programming', 'software', 'api' , 'artificial_intelligence', 'machine_learning'],
                 'business' => ['business', 'company', 'finance', 'market', 'sales'],
                 'legal' => ['legal', 'law', 'contract', 'agreement', 'regulation'],
                 'educational' => ['education', 'learning', 'course', 'training', 'study'],

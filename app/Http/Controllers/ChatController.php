@@ -220,6 +220,7 @@ class ChatController extends Controller
             ]);
 
             $responses[] = [
+                'interest' => $interest,
                 'user_message_id' => $userMessage->id,
                 'bot_message' => $botResponse,
                 'document_used' => $documents->isNotEmpty() ? $documents->first()->original_name : null

@@ -74,7 +74,6 @@ class DocumentController extends Controller
             'document' => 'required|array',
             'document.*' => 'file|mimes:' . $allowedMimes . '|max:' . $maxSizeKB,
             'slug' => 'nullable|string|max:255',
-            'mode' => 'nullable|in:default,research',
         ]);
 
         $uploadedDocuments = [];
@@ -90,7 +89,6 @@ class DocumentController extends Controller
                     'size' => $file->getSize(),
                     'status' => 'uploaded',
                     'slug' => $request->slug,
-                    'mode' => $request->mode ?? 'default',
                     'uploaded_by' => auth('admin')->id(),
                 ]);
 

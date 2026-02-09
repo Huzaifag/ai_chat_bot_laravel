@@ -17,8 +17,6 @@ class Document extends Model
         'size',
         'status',
         'uploaded_by',
-        'slug',
-        'mode',
     ];
 
     protected $casts = [
@@ -29,20 +27,16 @@ class Document extends Model
     protected static function booted()
     {
         static::creating(function ($document) {
-            // Only generate slug if not provided
-            if (empty($document->slug)) {
-                $slug = Str::slug($document->original_name);
-                // Ensure slug is unique
-                $count = Document::where('slug', 'LIKE', $slug . '%')->count();
-                if ($count > 0) {
-                    $slug .= '-' . ($count + 1);
-                }
-                $document->slug = $slug;
+            // Generate slug from original name
+            $slug = Str::slug($document->original_name);
+
+            // Ensure slug is unique
+            $count = Document::where('slug', 'LIKE', $slug . '%')->count();
+            if ($count > 0) {
+                $slug .= '-' . ($count + 1);
             }
-            // Set mode to 'default' if not provided
-            if (empty($document->mode)) {
-                $document->mode = 'default';
-            }
+
+            $document->slug = $slug;
         });
     }
     // Relationship with Admin (uploader)

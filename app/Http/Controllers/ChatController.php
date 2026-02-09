@@ -148,6 +148,7 @@ class ChatController extends Controller
         ]);
 
         return response()->json([
+            'interest' => $interest,
             'message' => $botResponse,
             'session_id' => $sessionId,
             'document_used' => $documents->isNotEmpty() ? $documents->first()->original_name : null

@@ -15,6 +15,7 @@ use App\Services\GroqApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Log;
 
 class ChatController extends Controller
 {
@@ -255,6 +256,7 @@ class ChatController extends Controller
                 'research' => ['research', 'study', 'analysis', 'data', 'experiment']
             ];
 
+            Log::info('Extracted keywords: ' . implode(', ', $keywords));
             foreach ($interestKeywords as $slug => $words) {
                 if (array_intersect($keywords, $words)) {
                     $query->where('slug', $slug);

@@ -82,9 +82,84 @@
             0%, 80%, 100% { transform: scale(0); }
             40% { transform: scale(1); }
         }
+
+        /* Welcome Screen Animations */
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .welcome-fade-out {
+            animation: fadeOut 0.6s ease-out forwards;
+        }
+        
+        .logo-animate {
+            animation: fadeInScale 0.8s ease-out 0.2s both;
+        }
+        
+        .text-animate {
+            animation: slideUp 0.6s ease-out 0.6s both;
+        }
+        
+        .loader-animate {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-screen w-full flex items-center justify-center sm:p-6 transition-colors duration-300">
+
+    <!-- Welcome Loader Screen -->
+    <div id="welcome-loader" class="fixed inset-0 bg-gradient-to-br from-brand-600 via-indigo-600 to-purple-700 flex items-center justify-center z-[100]">
+        <div class="text-center px-6 max-w-md">
+            <!-- Logo -->
+            <div class="logo-animate mb-8">
+                @if(system_setting('app_favicon'))
+                    <img src="{{ asset('storage/' . system_setting('app_favicon')) }}" alt="{{ system_setting('app_name', 'Logo') }}" class="w-24 h-24 mx-auto rounded-3xl shadow-2xl ring-4 ring-white/20 object-cover">
+                @else
+                    <div class="w-24 h-24 mx-auto rounded-3xl bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-2xl ring-4 ring-white/20">
+                        <i data-lucide="bot" class="w-12 h-12 text-white"></i>
+                    </div>
+                @endif
+            </div>
+            
+            <!-- App Name & Description -->
+            <div class="text-animate space-y-4">
+                <h1 class="text-4xl font-bold text-white mb-2">{{ system_setting('app_name', 'Premium Chatbot') }}</h1>
+                <p class="text-lg text-white/90 mb-6">{{ system_setting('app_tagline', 'Your AI-Powered Assistant') }}</p>
+                <p class="text-sm text-white/80 leading-relaxed mb-8">
+                    Experience intelligent conversations powered by advanced AI technology. Get instant answers, insights, and assistance.
+                </p>
+                
+                <!-- Loader Animation -->
+                <div class="flex items-center justify-center space-x-2 mb-6 loader-animate">
+                    <div class="w-2 h-2 bg-white rounded-full"></div>
+                    <div class="w-2 h-2 bg-white rounded-full" style="animation-delay: 0.2s;"></div>
+                    <div class="w-2 h-2 bg-white rounded-full" style="animation-delay: 0.4s;"></div>
+                </div>
+                
+                <!-- Developer Credit -->
+                <div class="text-xs text-white/70 space-y-1">
+                    <p class="font-medium">Developed by</p>
+                    <p class="text-white/90 font-semibold tracking-wide">Muhammad Huzaifa Gulzar</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Mode Selector Modal -->
     <div id="mode-selector" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" style="display:none;">
@@ -246,6 +321,14 @@
         $(document).ready(function() {
             // Initialize Icons
             lucide.createIcons();
+
+            // Welcome Loader Logic
+            setTimeout(function() {
+                $('#welcome-loader').addClass('welcome-fade-out');
+                setTimeout(function() {
+                    $('#welcome-loader').remove();
+                }, 600); // Match fade-out animation duration
+            }, 3000); // Show welcome screen for 3 seconds
 
             // State
             let isThinking = false;

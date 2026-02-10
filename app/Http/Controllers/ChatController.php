@@ -254,23 +254,26 @@ class ChatController extends Controller
 
         // If no specific interest, try to match keywords in message
         if (!$interest || $interest === 'general') {
-            $keywords = explode(' ', strtolower($message));
-            $interestKeywords = [
-                'medical' => ['medical', 'health', 'doctor', 'patient', 'treatment'],
-                'technical' => ['technical', 'code', 'programming', 'software', 'api' , 'artificial_intelligence', 'machine_learning'],
-                'business' => ['business', 'company', 'finance', 'market', 'sales'],
-                'legal' => ['legal', 'law', 'contract', 'agreement', 'regulation'],
-                'educational' => ['education', 'learning', 'course', 'training', 'study'],
-                'research' => ['research', 'study', 'analysis', 'data', 'experiment']
-            ];
+             $query->where('slug', 'general');
+            // $keywords = explode(' ', strtolower($message));
+            // $interestKeywords = [
+            //     'medical' => ['medical', 'health', 'doctor', 'patient', 'treatment'],
+            //     'technical' => ['technical', 'code', 'programming', 'software', 'api' , 'artificial_intelligence', 'machine_learning'],
+            //     'business' => ['business', 'company', 'finance', 'market', 'sales'],
+            //     'legal' => ['legal', 'law', 'contract', 'agreement', 'regulation'],
+            //     'educational' => ['education', 'learning', 'course', 'training', 'study'],
+            //     'research' => ['research', 'study', 'analysis', 'data', 'experiment']
+            // ];
 
-            Log::info('Extracted keywords: ' . implode(', ', $keywords));
-            foreach ($interestKeywords as $slug => $words) {
-                if (array_intersect($keywords, $words)) {
-                    $query->where('slug', $slug);
-                    break;
-                }
-            }
+            // Log::info('Extracted keywords: ' . implode(', ', $keywords));
+            // foreach ($interestKeywords as $slug => $words) {
+            //     if (array_intersect($keywords, $words)) {
+            //         $query->where('slug', $slug);
+            //         break;
+            //     }
+            // }
+
+
         }
 
         return $query->orderBy('created_at', 'desc')->get();

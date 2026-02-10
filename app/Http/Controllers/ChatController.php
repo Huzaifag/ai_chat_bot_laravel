@@ -108,7 +108,7 @@ class ChatController extends Controller
 
         // Find relevant documents based on interest
         $documents = $this->findRelevantDocuments($interest, $userMessage);
-        
+
         $botResponse = "I understand you're asking about: " . $userMessage;
         $apiProvider = null;
         $apiTokens = 0;

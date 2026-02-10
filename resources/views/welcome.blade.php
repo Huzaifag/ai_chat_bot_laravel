@@ -424,7 +424,8 @@
                 $('#messages-container').empty();
                 // Optionally reload previous messages (will start new session)
                 loadPreviousMessages();
-                // Optionally show a toast or message
+                // reload page 
+                window.location.reload();
             });
             // Initialize Icons
             lucide.createIcons();
